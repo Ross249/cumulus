@@ -1,0 +1,61 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Cumulus renderer checks</title>
+<style>body{font:14px monospace;background:#102033;color:#fff;padding:24px}canvas{display:inline-block;width:320px;height:180px;margin:12px;border:1px solid #aaa}button{padding:10px}pre{white-space:pre-wrap;line-height:1.7}</style>
+<h1>Cloud renderer checks</h1><button id="run">Run</button><pre id="results" role="status">Ready</pre><div id="canvases"></div>
+<script type="module">
+import createCloud from '../src/index.js';
+const output=document.querySelector('#results');
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function assert(value,message){if(!value)throw Error(message)}
+document.querySelector('#run').onclick=async()=>{
+ document.querySelector('#run').disabled=true; output.textContent='Running…\n';
+ let failures=0;
+ for(const backend of ['webgl2','webgpu']){
+  let instance;
+  const canvas=document.createElement('canvas');document.querySelector('#canvases').append(canvas);
+  try{
+   let fault;
+   instance=await createCloud(canvas,{renderer:backend,resolution:.5,maxPixels:40000,onError:e=>fault=e});
+   assert(instance.backend===backend,'Requested backend was not used');
+   assert(instance.sourceBytes>0,'Native shader source size was not reported');
+   assert(instance.memory.shapeBytes===192&&instance.memory.cpu===512,'Shape should share uniform storage');
+   await delay(350);
+   const before=instance.stats;
+   assert(before.frames>2&&before.time>0,'Animation did not advance');
+   instance.pause();await delay(80);const paused=instance.stats.time;await delay(100);
+   assert(instance.stats.time===paused,'Pause did not stop time');
+   instance.update({scene:'Golden hour',density:8});instance.render();
+   assert(instance.options.density===8&&instance.options.lightColor[1]===.65,'Scene override precedence failed');
+   instance.update({seed:42});instance.render();
+   assert(instance.options.seed===42,'Seed update failed');
+   const beforeDisturb=instance.stats;
+   instance.disturb(.5,.5,.18,-.03);
+   assert(instance.memory.cpu===992,'Spring buffers are missing from memory accounting');
+   await delay(180);
+   assert(instance.stats.frames>beforeDisturb.frames+1,'Paused cloud did not redraw its deformation');
+   assert(instance.stats.time===paused,'Interaction advanced paused cloud time');
+   const deadline=performance.now()+8000;
+   while(instance.memory.cpu>512&&performance.now()<deadline)await delay(100);
+   assert(instance.memory.cpu===512,'Cloud did not settle and release its spring buffers');
+   const settledFrames=instance.stats.frames;await delay(100);
+   assert(instance.stats.frames===settledFrames,'Settled paused cloud kept drawing');
+   let badPoke=false;try{instance.disturb(-1,.5)}catch{badPoke=true}
+   assert(badPoke,'Invalid interaction coordinates were accepted');
+   let rejected=false;try{instance.update({opacity:2})}catch{rejected=true}
+   assert(rejected&&instance.options.opacity===1,'Invalid update was not atomic');
+   const oldWidth=canvas.width;canvas.style.width='240px';await delay(100);
+   assert(canvas.width!==oldWidth,'ResizeObserver did not resize the drawing surface');
+   instance.resume();await delay(150);assert(instance.stats.time>paused,'Resume did not advance');
+   assert(!fault, fault?.message);
+   const live=instance.stats, memory=instance.memory.total;
+   instance.destroy();const frames=instance.stats.frames;await delay(100);
+   assert(instance.stats.frames===frames&&instance.memory.total===0,'Destroy leaked animation or known resources');
+   instance.destroy();
+   output.textContent+=`PASS ${backend}: ${live.frames} frames, t=${live.time.toFixed(3)}s, ${live.width}×${live.height}, ${memory} B; pause/disperse/restore/resume/resize/update/destroy OK\n`;
+  }catch(error){failures++;output.textContent+=`FAIL ${backend}: ${error.message}\n`;instance?.destroy()}
+ }
+ const assets=performance.getEntriesByType('resource').map(entry=>new URL(entry.name).pathname);
+ if(assets.some(path=>path.endsWith('.bin'))){failures++;output.textContent+='FAIL: binary model request\n'}
+ for(const extension of ['.glsl','.wgsl'])if(!assets.some(path=>path.endsWith(extension))){failures++;output.textContent+=`FAIL: no ${extension} request\n`}
+ output.textContent+=failures?'FAILED':'ALL CHECKS PASSED';document.querySelector('#run').disabled=false;
+};
+</script></html>

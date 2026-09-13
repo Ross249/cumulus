@@ -1,0 +1,22 @@
+{
+  "name": "cumulus",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "build": "node scripts/build.js",
+    "preview": "node scripts/dev.js --dist",
+    "test": "npm run build && node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    }
+  }
+}

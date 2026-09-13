@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="description" content="A tiny, animated cloud component. Explore six scenes with WebGL2 or WebGPU." />
+  <title>Cumulus — Playground</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23161616'/%3E%3Cpath d='M9 10H6v12h3m14-12h3v12h-3M12 20h8' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cousine&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="./" aria-label="Cumulus home"><span class="mark" aria-hidden="true">[_]</span>cumulus</a>
+    <span class="page-label">playground</span>
+  </header>
+
+  <main class="workspace">
+    <div class="playground-column">
+    <section class="stage" aria-label="Cloud scene carousel" aria-roledescription="carousel">
+      <div class="stage-heading"><span>PREVIEW</span><span id="preview-dimensions">720 × 440</span></div>
+      <article id="scene-card" class="scene-card" aria-busy="true" aria-label="Daylight scene">
+        <div id="canvas-host"><canvas id="cloud" tabindex="0" aria-label="Cloud preview. Drag to rotate; scroll to zoom."></canvas></div>
+        <div class="card-shade" aria-hidden="true"></div>
+        <div class="card-heading"><h1 id="scene-name">Daylight</h1><span id="card-index">01 / 06</span></div>
+        <div id="loading" class="loading" role="status">Initializing cloud<span>_</span></div>
+        <div id="error" class="error" role="alert" hidden><p id="error-message"></p><button id="retry" type="button">Retry</button><button id="use-webgl" type="button">Use WebGL2</button></div>
+        <button id="resize-handle" class="resize-handle" type="button" aria-label="Resize preview. Drag, or use arrow keys." title="Resize preview" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 13 10-10M8 13l5-5" /></svg></button>
+      </article>
+      <div class="preview-metrics">
+        <span class="metric" title="Uncompressed GLSL or WGSL source bytes for the active renderer."><span>SHADERS</span><strong id="shader-size">—</strong></span>
+        <details id="memory-details">
+          <summary class="metric" aria-label="Show known memory breakdown"><span>MEMORY ≈</span><strong id="memory-size">—</strong><span class="expand">+</span></summary>
+          <div class="memory-popover"><div class="popover-title">KNOWN MEMORY / ESTIMATE</div><dl><div><dt>CPU buffers</dt><dd id="cpu-size">—</dd></div><div><dt>GPU payload</dt><dd id="gpu-size">—</dd></div><div><dt>Color surface</dt><dd id="surface-size">—</dd></div></dl><p>Includes one color surface. Excludes JS, compiled shaders, browser, driver and compositor overhead.</p></div>
+        </details>
+        <span id="render-size" class="render-size">—</span>
+      </div>
+      <div class="carousel" aria-label="Scene navigation">
+        <nav id="indicators" class="indicators" aria-label="Choose a scene"></nav>
+        <div class="carousel-controls">
+          <button id="previous" class="icon-button" type="button" aria-label="Previous scene" disabled><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m5-5-5 5 5 5" /></svg></button>
+          <span id="scene-count" class="scene-count">01 / 06</span>
+          <button id="next" class="icon-button" type="button" aria-label="Next scene" disabled><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5" /></svg></button>
+          <button id="play" class="icon-button play-button" type="button" aria-label="Pause cloud and carousel" title="Pause cloud and carousel" disabled><svg id="pause-icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 2v10M10 2v10" /></svg><svg id="play-icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" hidden><path d="m3 2 9 5-9 5Z" /></svg></button>
+          <button id="interact" class="icon-button interact-button" type="button" aria-label="Disperse cloud mode" aria-pressed="false" title="Disperse cloud" disabled><svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5a1.5 1.5 0 0 1 3 0v6-8a1.5 1.5 0 0 1 3 0v8-6a1.5 1.5 0 0 1 3 0v7-3a1.5 1.5 0 0 1 3 0v6c0 4-2.5 7-6 7h-1c-2 0-3.5-1-4.7-2.7L4 14a1.5 1.5 0 0 1 2.2-2L8 14" /></svg></button>
+        </div>
+      </div>
+      <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    </section>
+
+    <section class="documentation" aria-label="Component documentation">
+      <div class="section-heading">
+        <h2>code</h2>
+        <button id="copy-code" type="button" class="copy-button" aria-label="Copy component code" title="Copy code"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="7" width="10" height="11" rx="1.5" /><path d="M12 7V3.5A1.5 1.5 0 0 0 10.5 2h-7A1.5 1.5 0 0 0 2 3.5v8A1.5 1.5 0 0 0 3.5 13H7" /></svg></button>
+        <span id="copy-status" class="copy-status" role="status"></span>
+        <span class="code-language">HTML / LIVE</span>
+      </div>
+      <pre class="code-block" tabindex="0" aria-label="Component usage code"><code id="component-code"></code></pre>
+      <p class="docs-note">Keep <code>src/</code> alongside your page. Call <code>cloud.destroy()</code> when removing the component.</p>
+
+      <div class="section-heading props-heading"><h2>shader props</h2><span class="section-meta">ALL OPTIONAL</span></div>
+      <div id="shader-props" class="table-scroll" role="region" aria-label="Shader props" tabindex="0"></div>
+
+      <div class="section-heading props-heading"><h2>component props</h2></div>
+      <p class="api-signature"><code>createCloud(canvas, props?) → Promise&lt;Cloud&gt;</code></p>
+      <p class="docs-note">Only <code>canvas</code> is required. Every prop has a default.</p>
+      <div id="component-props" class="table-scroll" role="region" aria-label="Component props" tabindex="0"></div>
+    </section>
+    </div>
+
+    <aside class="panel" aria-label="Cloud parameters">
+      <div class="panel-heading"><h2>Parameters</h2><button id="reset" type="button" disabled>Reset ↺</button></div>
+      <div class="panel-content">
+        <div class="render-settings">
+          <label class="select-row" for="renderer"><span>renderer</span><select id="renderer"><option value="webgl2">WebGL2</option><option value="webgpu">WebGPU</option></select></label>
+
+        </div>
+        <div class="dimensions"><span>preview size</span><div><input id="preview-width" type="number" min="240" max="1600" step="10" value="720" aria-label="Preview width" /><span>×</span><input id="preview-height" type="number" min="220" max="800" step="10" value="440" aria-label="Preview height" /></div></div>
+        <div id="controls"></div>
+      </div>
+    </aside>
+  </main>
+  <noscript><p class="noscript">Enable JavaScript to view the cloud.</p></noscript>
+</body>
+</html>
