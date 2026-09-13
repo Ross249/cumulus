@@ -23,6 +23,24 @@ document.querySelector('#run').onclick=async()=>{
    assert(before.frames>2&&before.time>0,'Animation did not advance');
    instance.pause();await delay(80);const paused=instance.stats.time;await delay(100);
    assert(instance.stats.time===paused,'Pause did not stop time');
+   const probe=document.createElement('canvas');probe.width=canvas.width;probe.height=canvas.height;
+   const pixels=probe.getContext('2d',{willReadFrequently:true});
+   const capture=time=>{instance.render(time);pixels.drawImage(canvas,0,0);return pixels.getImageData(0,0,probe.width,probe.height).data;};
+   const first=capture(0),second=capture(1.3);
+   let changed=0,difference=0;
+   for(let i=0;i<first.length;i+=4){
+    const delta=Math.abs(first[i]-second[i])+Math.abs(first[i+1]-second[i+1])+Math.abs(first[i+2]-second[i+2]);
+    difference+=delta;if(delta>6)changed++;
+   }
+   output.textContent+=`MOTION ${backend}: ${(changed/(first.length/4)*100).toFixed(2)}% pixels changed, ${(difference/(first.length/4)/3).toFixed(3)} mean RGB difference in 1.3s\n`;
+   assert(changed/(first.length/4)>.1&&difference/(first.length/4)/3>1.2,'Default cloud motion is too subtle or frozen');
+   const stationary=capture(1.3);
+   assert(stationary.every((value,i)=>value===second[i]),'Paused shader output changed at the same time');
+   const wind=instance.options.wind;instance.update({wind:[0,0,0]});
+   const still=capture(0),later=capture(1.3);
+   assert(still.every((value,i)=>value===later[i]),'Zero wind should stop cloud flow');
+   instance.update({wind});
+   instance.render(paused);
    instance.update({scene:'Golden hour',density:8});instance.render();
    assert(instance.options.density===8&&instance.options.lightColor[1]===.65,'Scene override precedence failed');
    instance.update({seed:42});instance.render();

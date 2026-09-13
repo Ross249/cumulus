@@ -36,7 +36,7 @@ float densityAt(vec3 w) {
   if(d>u[7].w+u[15].z*.5+.02) {
     return 0.;
   }
-  vec3 q=p*u[14].w+u[14].xyz*u[0].z*.025+vec3(u[0].w*.173);
+  vec3 q=p*u[14].w+u[14].xyz*u[0].z*.18+vec3(u[0].w*.173);
   float n=noise(q*4.);
   float octave=noise(q*8.+vec3(.37));
   float c=noise(q*16.+vec3(.71));

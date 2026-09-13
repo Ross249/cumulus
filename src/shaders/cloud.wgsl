@@ -33,7 +33,7 @@ fn densityAt(w: vec3f) -> f32 {
   if(d>u[7].w+u[15].z*.5+.02) {
     return 0.;
   }
-  var q: vec3f=p*u[14].w+u[14].xyz*u[0].z*.025+vec3f(u[0].w*.173);
+  var q: vec3f=p*u[14].w+u[14].xyz*u[0].z*.18+vec3f(u[0].w*.173);
   var n: f32=noise(q*4.);
   var octave: f32=noise(q*8.+vec3f(.37));
   var c: f32=noise(q*16.+vec3f(.71));

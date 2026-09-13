@@ -175,6 +175,8 @@ Shaders are stored as native source files, rather than JavaScript string wrapper
 
 ## Size and memory accounting
 
+The playground's `MODEL` metric shows `cloud.memory.shapeBytes`: 192 B for 12 procedurally generated spheres, each stored as four Float32 values. This is runtime shape data, generated locally with no model download. It is already included in the CPU memory total; shader sources, noise, and other uniforms are separate.
+
 The playground's `SHADERS` metric shows `cloud.sourceBytes`: the UTF-8 byte count of the shader sources loaded by the active backend. For WebGL2, this is the sum of both GLSL files; for WebGPU, it is the single WGSL file. This is the uncompressed response body size, not total network traffic accounting for compression, headers, JavaScript, CSS, and fonts.
 
 `memory` reports known persistent rendering resources in bytes:

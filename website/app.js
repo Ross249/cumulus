@@ -36,6 +36,7 @@ function sync() {
   const memory = cloud.memory, stats = cloud.stats;
   lastCpuBytes = memory.cpu;
   $('shader-size').textContent = bytes(cloud.sourceBytes);
+  $('model-size').textContent = bytes(memory.shapeBytes);
   $('memory-size').textContent = bytes(memory.total);
   for (const key of ['cpu', 'gpu', 'surface']) $(key + '-size').textContent = bytes(memory[key]);
   $('render-size').textContent = `${stats.width} × ${stats.height} px`;
