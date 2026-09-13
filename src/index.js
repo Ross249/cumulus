@@ -1,52 +1,20 @@
-import { options as schema } from './options.js';
-import { scenes } from './scenes.js';
+import { options as schema, colorOptions as colors } from './options.js';
+import { applyOptions } from './validation.js';
 import { drawingSize, memoryUsage, UNIFORM_BYTES } from './resources.js';
 import { generateShape } from './shape.js';
 import { createDeformation } from './deformation.js';
 
 export { scenes } from './scenes.js';
+const rendererLoaders = {
+  webgl2: () => import('./webgl.js'),
+  webgpu: () => import('./webgpu.js'),
+};
 const fields = Object.entries(schema);
 const linear = (v) => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4;
-const positive = new Set(['pixelRatio', 'resolution', 'distance', 'softness', 'baseSoftness', 'blend', 'noiseScale', 'lightDistance', 'skyGradient']);
-const nonnegative = new Set(['width', 'height', 'speed', 'density', 'billow', 'erosion', 'detail', 'turbulence', 'sunIntensity', 'ambient', 'absorption', 'shadowStrength', 'scattering', 'silverLining', 'exposure', 'sunGlow']);
-const colors = new Set(['lightColor', 'cloudColor', 'shadowColor', 'skyTop', 'skyBottom']);
 
 export function defaultOptions() {
   return { ...Object.fromEntries(fields.map(([key, [, value]]) => [key, structuredClone(value)])),
     renderer: 'webgl2', scene: 'Daylight' };
-}
-
-/** Validate first, then apply atomically. Scene values can be overridden in the same patch. */
-function apply(state, patch, initialized = false) {
-  if (!patch || typeof patch !== 'object' || Array.isArray(patch)) throw new TypeError('Options must be an object.');
-  for (const [key, value] of Object.entries(patch)) {
-    if (key === 'renderer') {
-      if (!['webgl2', 'webgpu'].includes(value)) throw new RangeError('renderer: use webgl2 or webgpu.');
-      if (initialized && value !== state.renderer) throw new Error('Renderer changes require a new canvas and instance.');
-    } else if (key === 'scene') {
-      if (!scenes.some((scene) => scene.name === value)) throw new RangeError(`Unknown scene: ${value}`);
-    } else {
-      if (!Object.hasOwn(schema, key)) throw new TypeError(`Unknown option: ${key}`);
-      const expected = schema[key][1];
-      if (Array.isArray(expected)) {
-        if (!Array.isArray(value) || value.length !== expected.length || !value.every(Number.isFinite)) throw new TypeError(`${key}: expected ${expected.length} finite numbers.`);
-        if (colors.has(key) && value.some((v) => v < 0 || v > 1)) throw new RangeError(`${key}: colors use 0–1 sRGB values.`);
-        if (key === 'scale' && value.some((v) => v <= 0)) throw new RangeError('scale components must be positive.');
-        if (key === 'lightDirection' && Math.hypot(...value) < .001) throw new RangeError('lightDirection must be nonzero.');
-      } else if (typeof expected === 'boolean') {
-        if (typeof value !== 'boolean') throw new TypeError(`${key}: expected a boolean.`);
-      } else {
-        if (!Number.isFinite(value)) throw new TypeError(`${key}: expected a finite number.`);
-        if (positive.has(key) && value <= 0 || nonnegative.has(key) && value < 0) throw new RangeError(`Invalid ${key}.`);
-        if (key === 'fov' && (value < 1 || value > 120)) throw new RangeError('fov: use 1–120 degrees.');
-        if (key === 'anisotropy' && Math.abs(value) >= 1) throw new RangeError('anisotropy must be between -1 and 1.');
-        if (['opacity', 'powder', 'ambientGradient', 'jitter'].includes(key) && (value < 0 || value > 1)) throw new RangeError(`${key}: use 0–1.`);
-        if (['steps', 'lightSteps', 'maxPixels'].includes(key) && (!Number.isInteger(value) || value < 1 || key === 'steps' && value > 192 || key === 'lightSteps' && value > 12)) throw new RangeError(`Invalid ${key}.`);
-      }
-    }
-  }
-  if (patch.scene) Object.assign(state, structuredClone(scenes.find((s) => s.name === patch.scene).values));
-  Object.assign(state, structuredClone(patch));
 }
 
 /** @param {HTMLCanvasElement} canvas The only required argument. */
@@ -55,7 +23,7 @@ export default async function createCloud(canvas, initial = {}) {
   const { onRender, onError = console.error, ...overrides } = initial;
   if (onRender != null && typeof onRender !== 'function' || typeof onError !== 'function') throw new TypeError('Callbacks must be functions.');
   const state = defaultOptions();
-  apply(state, overrides);
+  applyOptions(state, overrides);
 
   let uniforms = new Float32Array(UNIFORM_BYTES / 4);
   let shape = uniforms.subarray(80);
@@ -71,13 +39,8 @@ export default async function createCloud(canvas, initial = {}) {
     frame = 0;
     onError(error);
   }
-  if (state.renderer === 'webgpu') {
-    const { createRenderer } = await import('./webgpu.js');
-    renderer = await createRenderer(canvas, fail);
-  } else {
-    const { createRenderer } = await import('./webgl.js');
-    renderer = await createRenderer(canvas, fail);
-  }
+  const { createRenderer } = await rendererLoaders[state.renderer]();
+  renderer = await createRenderer(canvas, fail);
 
   function draw() {
     if (destroyed || failed) return;
@@ -131,7 +94,7 @@ export default async function createCloud(canvas, initial = {}) {
       if (state.animate) state.time += delta * state.speed;
       if (deformation && !deformation.step(delta)) deformation = null;
       const patch = onRender?.(state.time, delta);
-      if (patch) apply(state, patch, true);
+      if (patch) applyOptions(state, patch, true);
       draw();
       if (state.animate || deformation) schedule();
       else previous = 0;
@@ -164,11 +127,11 @@ export default async function createCloud(canvas, initial = {}) {
     },
     update(patch) {
       if (destroyed || failed) return;
-      apply(state, patch, true);
+      applyOptions(state, patch, true);
       schedule();
     },
     render(time) {
-      if (time !== undefined) apply(state, { time }, true);
+      if (time !== undefined) applyOptions(state, { time }, true);
       draw();
     },
     pause() { api.update({ animate: false }); },

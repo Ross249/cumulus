@@ -155,7 +155,7 @@ Declare `canvas` and `cloud` with `let` in this example. The playground handles 
 | Camera | `yaw: 0.12`, `pitch: 0.06` (radians), `distance: 6.6`, `fov: 42` (degrees), `target: [0,0.55,0]`, `offset: [0,0]` |
 | Animation | `wind: [0.2,-0.04,0.07]`, used with `animate`, `time`, and `speed` |
 
-Numeric values must be finite. Colors use sRGB RGB arrays with components from 0 to 1. Each `scale` component must be positive, the light direction must be nonzero, and `anisotropy` must be strictly between -1 and 1. `opacity`, `powder`, `ambientGradient`, and `jitter` use 0–1. Divisors such as softness, camera distance, and noise scale must be positive. Panel ranges are convenient editing ranges; full API validation is in `src/index.js`.
+Numeric values must be finite. Colors use sRGB RGB arrays with components from 0 to 1. Each `scale` component must be positive, the light direction must be nonzero, and `anisotropy` must be strictly between -1 and 1. `opacity`, `powder`, `ambientGradient`, and `jitter` use 0–1. Divisors such as softness, camera distance, and noise scale must be positive. Panel ranges are convenient editing ranges; full API validation is in `src/validation.js`.
 
 ## Procedural generation and shaders
 
@@ -242,7 +242,8 @@ src/
   shape.js            Seeded procedural cloud shape written into uniforms
   deformation.js      Pointer impulses and spring recovery for cloud lobes
   resources.js        Shared noise, pixel budgets, and memory accounting
-  options.js          Parameter defaults and uniform offsets
+  options.js          Parameter defaults, uniform offsets, and color fields
+  validation.js       Composed field rules and atomic option updates
   scenes.js           Six scene presets
 website/
   index.html          Playground page
@@ -256,6 +257,7 @@ scripts/
   build.js            Static dist/ generation
 tests/
   core.test.js        Memory, examples, and deployment output checks
+  validation.test.js  Option boundaries, atomic updates, and renderer locking
   transition.test.js  Scene interpolation and interrupted transition checks
   deformation.test.js Dispersal, exact recovery, stability, and memory checks
   browser.html        Real WebGL2 / WebGPU lifecycle checks

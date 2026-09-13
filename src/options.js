@@ -1,250 +1,59 @@
-// Uniform offsets and defaults from the supplied cloud model.
+// Uniform offsets and defaults for the procedural cloud.
 export const options = {
-  "animate": [
-    -1,
-    true
-  ],
-  "speed": [
-    -1,
-    1
-  ],
-  "time": [
-    2,
-    0
-  ],
-  "width": [
-    -1,
-    0
-  ],
-  "height": [
-    -1,
-    0
-  ],
-  "pixelRatio": [
-    -1,
-    1
-  ],
-  "resolution": [
-    -1,
-    0.75
-  ],
-  "maxPixels": [
-    -1,
-    360000
-  ],
-  "yaw": [
-    -1,
-    0.12
-  ],
-  "pitch": [
-    -1,
-    0.06
-  ],
-  "distance": [
-    -1,
-    6.6
-  ],
-  "fov": [
-    -1,
-    42
-  ],
-  "target": [
-    -1,
-    [
-      0,
-      0.55,
-      0
-    ]
-  ],
-  "offset": [
-    72,
-    [
-      0,
-      0
-    ]
-  ],
-  "scale": [
-    20,
-    [
-      1,
-      1,
-      1
-    ]
-  ],
-  "density": [
-    23,
-    9
-  ],
-  "coverage": [
-    31,
-    0.28
-  ],
-  "softness": [
-    27,
-    0.12
-  ],
-  "baseHeight": [
-    64,
-    -0.57
-  ],
-  "baseSoftness": [
-    65,
-    0.14
-  ],
-  "blend": [
-    66,
-    0.32
-  ],
-  "noiseScale": [
-    59,
-    0.5
-  ],
-  "billow": [
-    60,
-    0.3
-  ],
-  "erosion": [
-    61,
-    0.11
-  ],
-  "detail": [
-    63,
-    0.08
-  ],
-  "turbulence": [
-    62,
-    0.4
-  ],
-  "seed": [
-    3,
-    7
-  ],
-  "lightDirection": [
-    32,
-    [
-      -1,
-      1,
-      0.2
-    ]
-  ],
-  "sunIntensity": [
-    35,
-    2.2
-  ],
-  "lightColor": [
-    36,
-    [
-      1,
-      0.97,
-      0.91
-    ]
-  ],
-  "cloudColor": [
-    40,
-    [
-      1,
-      1,
-      1
-    ]
-  ],
-  "shadowColor": [
-    44,
-    [
-      0.43,
-      0.47,
-      0.56
-    ]
-  ],
-  "ambient": [
-    39,
-    0.48
-  ],
-  "ambientGradient": [
-    78,
-    0.18
-  ],
-  "absorption": [
-    43,
-    1
-  ],
-  "shadowStrength": [
-    47,
-    0.9
-  ],
-  "scattering": [
-    55,
-    0.13
-  ],
-  "anisotropy": [
-    67,
-    0.45
-  ],
-  "powder": [
-    70,
-    0.35
-  ],
-  "silverLining": [
-    71,
-    1.2
-  ],
-  "exposure": [
-    15,
-    1.1
-  ],
-  "skyTop": [
-    48,
-    [
-      0.018,
-      0.17,
-      0.4
-    ]
-  ],
-  "skyBottom": [
-    52,
-    [
-      0.3,
-      0.43,
-      0.66
-    ]
-  ],
-  "skyGradient": [
-    76,
-    0.25
-  ],
-  "sunGlow": [
-    77,
-    0.05
-  ],
-  "transparent": [
-    51,
-    false
-  ],
-  "opacity": [
-    11,
-    1
-  ],
-  "wind": [
-    56,
-    [
-      0.2,
-      -0.04,
-      0.07
-    ]
-  ],
-  "steps": [
-    19,
-    112
-  ],
-  "lightSteps": [
-    68,
-    7
-  ],
-  "lightDistance": [
-    69,
-    3.6
-  ],
-  "jitter": [
-    74,
-    0.4
-  ]
+  animate: [-1, true],
+  speed: [-1, 1],
+  time: [2, 0],
+  width: [-1, 0],
+  height: [-1, 0],
+  pixelRatio: [-1, 1],
+  resolution: [-1, 0.75],
+  maxPixels: [-1, 360000],
+  yaw: [-1, 0.12],
+  pitch: [-1, 0.06],
+  distance: [-1, 6.6],
+  fov: [-1, 42],
+  target: [-1, [0, 0.55, 0]],
+  offset: [72, [0, 0]],
+  scale: [20, [1, 1, 1]],
+  density: [23, 9],
+  coverage: [31, 0.28],
+  softness: [27, 0.12],
+  baseHeight: [64, -0.57],
+  baseSoftness: [65, 0.14],
+  blend: [66, 0.32],
+  noiseScale: [59, 0.5],
+  billow: [60, 0.3],
+  erosion: [61, 0.11],
+  detail: [63, 0.08],
+  turbulence: [62, 0.4],
+  seed: [3, 7],
+  lightDirection: [32, [-1, 1, 0.2]],
+  sunIntensity: [35, 2.2],
+  lightColor: [36, [1, 0.97, 0.91]],
+  cloudColor: [40, [1, 1, 1]],
+  shadowColor: [44, [0.43, 0.47, 0.56]],
+  ambient: [39, 0.48],
+  ambientGradient: [78, 0.18],
+  absorption: [43, 1],
+  shadowStrength: [47, 0.9],
+  scattering: [55, 0.13],
+  anisotropy: [67, 0.45],
+  powder: [70, 0.35],
+  silverLining: [71, 1.2],
+  exposure: [15, 1.1],
+  skyTop: [48, [0.018, 0.17, 0.4]],
+  skyBottom: [52, [0.3, 0.43, 0.66]],
+  skyGradient: [76, 0.25],
+  sunGlow: [77, 0.05],
+  transparent: [51, false],
+  opacity: [11, 1],
+  wind: [56, [0.2, -0.04, 0.07]],
+  steps: [19, 112],
+  lightSteps: [68, 7],
+  lightDistance: [69, 3.6],
+  jitter: [74, 0.4],
 };
+
+export const colorOptions = new Set([
+  'lightColor', 'cloudColor', 'shadowColor', 'skyTop', 'skyBottom',
+]);
